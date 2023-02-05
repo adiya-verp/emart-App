@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  
+  # Fortend is client
+  client:
+    build:
+      context: ./client
+    ports:
+      - "4200:4200"
+    container_name: client
+    depends_on:
+      [nodeapi,javaapi]
+
+  # Nodejs Microservice
+  nodeapi:
+    build:
+      context: ./nodeapi
+    ports:
+      - "5000:5000"
+    container_name: nodeapi
+    depends_on:
+      [emongo]
+
+  # java Microservice
+  javaapi:
+    build:
+      context: ./javaapi
+    ports:
+      - "9000:9000"
+    container_name: javaapi
+    depends_on:
+      [emartdb]
+    
+  # Gateway -nginx
+  nginx:
+    restart: always
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - "./nginx/api_gateway.conf:/etc/nginx/conf.d/default.conf"
+    ports:
+      - "80:80"
+    command: ['nginx-debug', '-g', 'daemon off;']
+    depends_on:
+      [client]
+
+  # Mongodb database depens_on nodeapi
+  emongo:
+    image: mongo:4
+    container_name: emongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=epoc
+
+  # MYSQL database depens_on javaapi
+  emartdb:
+  image: mysql:5.7
+  container_name: emartdb
+  ports:
+    - "3306:3306"
+  environment:
+    - MYSQL_ROOT_PASSWORD=emartdbpass     
+    - MYSQL_DATABASE=books
