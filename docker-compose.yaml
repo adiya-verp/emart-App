@@ -30,6 +30,8 @@ services:
       - "9000:9000"
     container_name: javaapi
     depends_on:
+      - nginx
+    depends_on:
       [emartdb]
     
   # Gateway -nginx
